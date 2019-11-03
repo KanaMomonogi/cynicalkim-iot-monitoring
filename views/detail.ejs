@@ -218,9 +218,9 @@
     )
     $('#deleteSensor').click(function () {
       console.log('click')
-      $('.modal .content p').text('삭제하시겠습니까?')
+      $('.modal .content p').text('센서를 삭제합니다. 데이터는 복구되지 않습니다.')
 
-      $('.mini.modal').modal({
+      $('.tiny.modal').modal({
         onApprove: function () {
           $.ajax({
             url: '/api/sensorDelete/' + sensorIdx + '',
@@ -243,12 +243,12 @@
       }).modal('show');
     })
     $('#updateSensor').click(function () {
-      $('.modal .content p').text('수정하시겠습니까?')
+      $('.modal .content p').text('센서 정보를 수정합니다.')
       $('.approve').text('수정')
       $('.approve').removeClass('red')
       $('.approve').addClass('blue')
       console.log('click')
-      $('.mini.modal').modal({
+      $('.tiny.modal').modal({
         onApprove: function () {
           let tempMin = $('#tempMin').val()
           let tempMax = $('#tempMax').val()
@@ -298,9 +298,9 @@
       }).modal('show');
     })
     $('#clearLog').click(function () {
-      $('.modal .content p').text('삭제하시겠습니까?')
+      $('.modal .content p').text('이 센서의 로그를 초기화합니다. 데이터는 복구되지 않습니다.')
 
-      $('.mini.modal').modal({
+      $('.tiny.modal').modal({
         onApprove: function () {
           $.ajax({
             url: '/api/sensorLogDelete/' + sensorIdx + '',
@@ -463,10 +463,13 @@
         <th>습도</th>
       </thead>
     </table>
-    <button id="clearLog" class="ui button red">로그 초기화</button>
+    <div id="btnWrap" style="margin-top:18px;">
+      <button id="clearLog" class="ui button red">로그 초기화</button>
+    </div>
+    
   </div>
   </div>
-  <div class="ui mini modal">
+  <div class="ui tiny modal">
     <div class="header"></div>
     <div class="content">
       <p>삭제하시겠습니까?</p>

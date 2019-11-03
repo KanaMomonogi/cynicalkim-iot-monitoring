@@ -12,9 +12,11 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.semanticui.css" />
 <link rel="stylesheet" type="text/css"
   href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.semanticui.css" />
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.css"/>
+<link rel="stylesheet" type="text/css"
+  href="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.css" />
 
-  <script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.js"></script>
+<script type="text/javascript"
+  src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/dataTables.semanticui.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.js"></script>
@@ -85,18 +87,17 @@
       filter: false,
       searching: true,
       buttons: [
-        { extend: 'excelHtml5', title:'온습도 로그',messageTop: function(){
-          var min = minValue
-          var max = maxValue
-          if(min == undefined)
-          {
-            min = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
-          }
-          if(max == undefined)
-          {
-            max = moment(new Date()).format("YYYY-MM-DD HH:mm");
-          }
-            return '조회기간: '+minValue+'~'+maxValue+''
+        {
+          extend: 'excelHtml5', title: '온습도 로그', messageTop: function () {
+            var min = minValue
+            var max = maxValue
+            if (min == undefined) {
+              min = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
+            }
+            if (max == undefined) {
+              max = moment(new Date()).format("YYYY-MM-DD HH:mm");
+            }
+            return '조회기간: ' + minValue + '~' + maxValue + ''
           }
         }
       ],
@@ -161,7 +162,7 @@
       $('#textSearch').val('')
       table.draw()
     })
-    
+
     $.fn.dataTable.ext.search.push(
       function (settings, data, dataIndex) {
         if (minValue == '' && maxValue == '') {
@@ -200,12 +201,62 @@
         }
       }
     )
+
+    $('#clearAllLog').click(function () {
+      $('.modal .content p').text('로그 전체를 초기화 합니다. 삭제된 데이터는 복구되지 않습니다.')
+      $('.tiny.modal').modal({
+        onApprove: function () {
+          $.ajax({
+            url: '/api/allLogDelete/',
+            method: 'get',
+            async: false,
+            success: function (json) {
+              console.log(json)
+              if (json.result == 'success') {
+                $('body')
+                  .toast({
+                    title: '삭제되었습니다.'
+                  })
+                setTimeout(function () {
+                  location.reload()
+                }, 1500)
+              }
+            }
+          })
+        }
+      }).modal('show');
+    })
+    $('#clearAllData').click(function () {
+      $('.modal .content p').text('모든 정보를 초기화 합니다. 진행하시겠습니까?')
+      $('.tiny.modal').modal({
+        onApprove: function () {
+          $.ajax({
+            url: '/api/allDataDelete/',
+            method: 'get',
+            async: false,
+            success: function (json) {
+              console.log(json)
+              if (json.result == 'success') {
+                $('body')
+                  .toast({
+                    title: '삭제되었습니다.'
+                  })
+                setTimeout(function () {
+                  location.href = '/'
+                }, 1500)
+              }
+            }
+          })
+        }
+      }).modal('show');
+    })
   });
 </script>
 <style>
   .item:first-child::before {
     width: 0px !important;
   }
+
   .inline.fields label {
     margin-left: 9px !important;
   }
@@ -213,6 +264,7 @@
   .inline.fields input {
     width: 111px !important;
   }
+
   .segment {
     border-bottom: 0 !important;
   }
@@ -220,9 +272,19 @@
   #logTable_filter {
     display: none;
   }
-  .dt-buttons.ui.basic.buttons{width:117px !important;}
-  #resetSearch{float:right;}
-  #logTable_paginate{text-align: center; margin-top:15px;}
+
+  .dt-buttons.ui.basic.buttons {
+    width: 117px !important;
+  }
+
+  #resetSearch {
+    float: right;
+  }
+
+  #logTable_paginate {
+    text-align: center;
+    margin-top: 15px;
+  }
 </style>
 
 <body>
@@ -237,7 +299,7 @@
     </div>
   </div>
   <div class="ui bottom attached segment">
-    
+
     <div>
       <div class="ui form">
         <div class="three fields">
@@ -273,10 +335,23 @@
           <th>습도</th>
         </thead>
       </table>
-      <button id="clearAllLog" class="ui button red">전체 로그 초기화</button>
+      <div id="btnWrap" style="margin-top:18px;">
+        <button id="clearAllLog" class="ui button red">전체 로그 초기화</button>
+        <button id="clearAllData" class="ui button red">데이터 초기화</button>
+      </div>
+    </div>
+    
+  </div>
+  <div class="ui tiny modal">
+    <div class="header"></div>
+    <div class="content">
+      <p></p>
+    </div>
+    <div class="actions">
+      <div class="ui cancel button">취소</div>
+      <div class="ui approve red button">삭제</div>
     </div>
   </div>
-
 </body>
 
 </html>

@@ -358,6 +358,42 @@ module.exports.logList = async (req, res) => {
         });
     }
 }
+module.exports.allLogDelete = async (req, res) => {
+    try {
+        Log.destroy({ truncate: true })
+        res.status(200).json({
+            //sensorList: await sensorList,
+            result: "success"
+        });
+    }
+    catch (error) {
+        console.log(error)
+        res.status(200).json({
+
+            result: "fail"
+        });
+    }
+}
+module.exports.allDataDelete = async (req, res) => {
+    try {
+        Company.destroy({ truncate: true })
+        Place.destroy({ truncate: true })
+        Sensor.destroy({ truncate: true })
+        Log.destroy({ truncate: true })
+        res.status(200).json({
+            //sensorList: await sensorList,
+            result: "success"
+        });
+    }
+    catch (error) {
+        console.log(error)
+        res.status(200).json({
+
+            result: "fail"
+        });
+    }
+}
+
 async function tokenGenerator() {
     try {
 
