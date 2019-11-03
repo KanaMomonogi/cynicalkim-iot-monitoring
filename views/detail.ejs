@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Monitoring</title>
+</head>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.css">
+<script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.semanticui.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.semanticui.css" />
+<link rel="stylesheet" type="text/css"
+  href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.semanticui.css" />
+<link rel="stylesheet" type="text/css"
+  href="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.css" />
+
+<script type="text/javascript"
+  src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/af-2.1.2/b-1.2.2/b-colvis-1.2.2/b-flash-1.2.2/b-html5-1.2.2/b-print-1.2.2/cr-1.3.2/fc-3.2.2/fh-3.1.2/kt-2.1.3/r-2.1.0/rr-1.1.2/sc-1.4.2/se-1.2.0/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/dataTables.semanticui.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.semanticui.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.0/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js"></script>
+<script>
+  $(document).ready(function () {
+    let sensorIdx = <%= idx %>;
+    var info;
+    var log;
+    function detailLoad(callback) {
+      $.ajax({
+        url: '/api/sensorDetail/' + sensorIdx + '',
+        method: 'get',
+        async: false,
+        success: callback
+      })
+    }
+    detailLoad(function (data) {
+      info = data.info
+      log = data.log
+    })
+    console.log(info)
+    $('#companyName').val(info.COMPANY_NAME)
+    $('#placeName').val(info.PLACE_NAME)
+    $('#sensorName').val(info.SENSOR_NAME)
+    $('#sensorToken').val(info.SENSOR_TOKEN)
+
+    var option = info.SENSOR_OPTION
+    var tempOption = option.split(',')
+    var tempMinMax = tempOption[0].split('/')
+    var humiMinMax = tempOption[1].split('/')
+    
+    $('#tempMin').val(tempMinMax[0])
+    $('#tempMax').val(tempMinMax[1])
+    $('#humiMin').val(humiMinMax[0])
+    $('#humiMax').val(humiMinMax[1])
+    var columList =
+      [
+        {
+          "data": "COMPANY_NAME",
+          "name": "회사"
+        }, {
+          "data": "PLACE_NAME",
+          "name": "장소",
+        }, {
+          "data": "SENSOR_NAME",
+          "name": "센서명"
+        },
+        {
+          "data": "REG_DE",
+          "name": "측정시간"
+
+        },
+        {
+          "data": "TEMP",
+          "name": "온도"
+        },
+        {
+          "data": "HUMI",
+          "name": "습도"
+        }
+      ]
+    var table = $('#logTable').DataTable({
+      dom: 'Bfrtip',
+      ordering: true,
+      order: [
+        [0, "desc"] //thead index로 순서 정렬
+      ],
+      filter: true,
+      serverSide: false,
+      searching: false,
+      lengthMenu: [[3, 5, 10, -1], [3, 5, 10, "All"]],
+      pageLength: 10,
+      bPaginate: true,
+      bLengthChange: true,
+      bAutoWidth: false,
+      bStateSave: false,
+      bInfo: false,
+      filter: false,
+      searching: true,
+      buttons: [
+        {
+          extend: 'excelHtml5', title: '온습도 로그', messageTop: function () {
+            var min = minValue
+            var max = maxValue
+            if (min == undefined) {
+              min = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
+            }
+            if (max == undefined) {
+              max = moment(new Date()).format("YYYY-MM-DD HH:mm");
+            }
+            return '장소: ' + info.PLACE_NAME + ', 센서명: ' + info.SENSOR_NAME + ', 조회기간: ' + minValue + '~' + maxValue + ''
+          }
+        }
+      ],
+      language: {
+        "paginate": {
+          "previous": "<",
+          "next": ">"
+        },
+        zeroRecords: "데이터가 없습니다."
+      },
+      data: log,
+      columns: columList,
+      columnDefs: [{
+        targets: 3, render: function (data) {
+          return moment(data).format('YYYY-MM-DD HH:mm');
+        }
+      }],
+      initComplete: function (settings, json) {
+        $('.buttons-excel').prepend('<i class="icon file excel" style="margin-right:5px;"></i>')
+      }
+    });
+
+    $('#backBtn').click(function () {
+      location.href = '/'
+    })
+    var minValue = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
+    var maxValue = moment(new Date()).format("YYYY-MM-DD HH:mm");
+    $('#minDatetime').calendar({
+      onChange: function (date, text) {
+        if (date != undefined) {
+          var newValue = moment(date).format("YYYY-MM-DD HH:mm");
+          minValue = newValue
+        }
+        else {
+          var newValue = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
+          minValue = newValue
+        }
+        table.draw()
+      }
+    })
+    $('#maxDatetime').calendar({
+      onChange: function (date, text) {
+        if (date != undefined) {
+          var newValue = moment(date).format("YYYY-MM-DD HH:mm");
+          maxValue = newValue
+        }
+        else {
+          var newValue = moment(new Date()).format("YYYY-MM-DD HH:mm");
+          maxValue = newValue;
+        }
+        table.draw()
+      }
+    })
+    $('#textSearch').keyup(function () {
+      table.search($(this).val()).draw();
+    })
+    $('#resetSearch').click(function () {
+      minValue = moment(new Date(2019, 9, 1, 00, 00)).format("YYYY-MM-DD HH:mm");
+      maxValue = moment(new Date()).format("YYYY-MM-DD HH:mm");
+      $('#minInput').val('')
+      $('#maxInput').val('')
+      $('#textSearch').val('')
+      table.draw()
+    })
+
+    $.fn.dataTable.ext.search.push(
+      function (settings, data, dataIndex) {
+        if (minValue == '' && maxValue == '') {
+          return true;
+        }
+        if (minValue != '' || maxValue != '') {
+          var iMin_temp = minValue;
+
+          var iMax_temp = maxValue;
+
+          var tempMin = iMin_temp.split(" ")
+          var tempMax = iMax_temp.split(" ")
+          var tempDate = data[3].split(" ")
+          var arr_min = tempMin[0].split("-");
+          var arr_max = tempMax[0].split("-");
+          var arr_date = tempDate[0].split("-");
+
+          var tempMinTime = tempMin[1].split(":");
+          var tempMaxTime = tempMax[1].split(":");
+          var tempDateTime = tempDate[1].split(":");
+
+          var iMin = moment(new Date(arr_min[0], arr_min[1], arr_min[2], tempMinTime[0], tempMinTime[1])).format("YYYY-MM-DD HH:mm");
+          var iMax = moment(new Date(arr_max[0], arr_max[1], arr_max[2], tempMaxTime[0], tempMaxTime[1])).format("YYYY-MM-DD HH:mm");
+          var iDate = moment(new Date(arr_date[0], arr_date[1], arr_date[2], tempDateTime[0], tempDateTime[1])).format("YYYY-MM-DD HH:mm");
+          if (iMin == "" && iMax == "") {
+            return true;
+          } else if (iMin == "" && iDate < iMax) {
+            return true;
+          } else if (iMin <= iDate && "" == iMax) {
+            return true;
+          } else if (iMin <= iDate && iDate <= iMax) {
+            return true;
+          }
+
+          return false;
+        }
+      }
+    )
+    $('#deleteSensor').click(function () {
+      console.log('click')
+      $('.modal .content p').text('삭제하시겠습니까?')
+
+      $('.mini.modal').modal({
+        onApprove: function () {
+          $.ajax({
+            url: '/api/sensorDelete/' + sensorIdx + '',
+            method: 'get',
+            async: false,
+            success: function (json) {
+              console.log(json)
+              if (json.result == 'success') {
+                $('body')
+                  .toast({
+                    title: '삭제되었습니다.'
+                  })
+                setTimeout(function () {
+                  location.href = '/'
+                }, 1500)
+              }
+            }
+          })
+        }
+      }).modal('show');
+    })
+    $('#updateSensor').click(function () {
+      $('.modal .content p').text('수정하시겠습니까?')
+      $('.approve').text('수정')
+      $('.approve').removeClass('red')
+      $('.approve').addClass('blue')
+      console.log('click')
+      $('.mini.modal').modal({
+        onApprove: function () {
+          let tempMin = $('#tempMin').val()
+          let tempMax = $('#tempMax').val()
+          let humiMin = $('#humiMin').val()
+          let humiMax = $('#humiMax').val()
+          if(tempMin == '')
+          {
+            tempMin = '-'
+          }
+          if(tempMax == '')
+          {
+            tempMax = '-'
+          }
+          if(humiMin == '')
+          {
+            humiMin = '-'
+          }
+          if(humiMax == '')
+          {
+            humiMax = '-'
+          }
+          let sensorOption = tempMin+'/'+tempMax+','+humiMin+'/'+humiMax+''
+          $.ajax({
+            url: '/api/sensorUpdate/' + sensorIdx + '',
+            method: 'post',
+            data:{
+              "sensorOption": sensorOption
+            },
+            async: false,
+            success: function (json) {
+              console.log(json)
+              if (json.result == 'success') {
+                $('body')
+                  .toast({
+                    title: '수정되었습니다.'
+                  })
+                setTimeout(function () {
+                  location.reload()
+                }, 1500)
+              }
+            }
+          })
+        },
+        onDeny:function(){
+          location.reload()
+        }
+      }).modal('show');
+    })
+    $('#clearLog').click(function () {
+      $('.modal .content p').text('삭제하시겠습니까?')
+
+      $('.mini.modal').modal({
+        onApprove: function () {
+          $.ajax({
+            url: '/api/sensorLogDelete/' + sensorIdx + '',
+            method: 'get',
+            async: false,
+            success: function (json) {
+              console.log(json)
+              if (json.result == 'success') {
+                $('body')
+                  .toast({
+                    title: '삭제되었습니다.'
+                  })
+                setTimeout(function () {
+                  location.reload()
+                }, 1500)
+              }
+            }
+          })
+        }
+      }).modal('show');
+    })
+  });
+</script>
+<style>
+  .item:first-child::before {
+    width: 0px !important;
+  }
+
+  .inline.fields {
+    margin-left: 0 !important;
+    margin-top: 20px !important;
+  }
+
+  .inline.fields label {
+    margin-left: 9px !important;
+  }
+
+  .inline.fields input {
+    width: 111px !important;
+  }
+  .segment {
+    border-bottom: 0 !important;
+  }
+
+  #logTable_filter {
+    display: none;
+  }
+
+  .dt-buttons.ui.basic.buttons {
+    width: 117px !important;
+  }
+
+  #resetSearch {
+    float: right;
+  }
+
+  #logTable_paginate {
+    text-align: center;
+    margin-top: 15px;
+  }
+</style>
+
+<body>
+  <!--search bar-->
+  <div class="ui top attached menu">
+    <div class="left menu">
+      <div class="item">
+        <div class="ui icon">
+          <button id="backBtn" class="ui button"><i class="angle left link icon"></i>뒤로가기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui bottom attached segment">
+    <div class="ui medium header">센서 정보</div>
+    <div>
+      <div class="ui form">
+        <div class="four fields">
+          <div class="field">
+            <label>회사</label>
+            <input id="companyName" type="text" name="companyName" placeholder="회사" readonly>
+          </div>
+          <div class="field">
+            <label>장소</label>
+            <input id="placeName" type="text" name="placeName" placeholder="장소" readonly>
+          </div>
+          <div class="field">
+            <label>회의실</label>
+            <input id="sensorName" type="text" name="sensorName" placeholder="회의실" readonly>
+          </div>
+          <div class="field">
+              <label>센서 토큰</label>
+              <input id="sensorToken" type="text" name="sensorToken" readonly>
+            </div>
+        </div>
+        <div class="fields">
+            
+          <div class="inline fields">
+            <label>온도 설정</label>
+            <div class="field">
+              <input id="tempMin" type="text" placeholder="최소 값">
+            </div>
+            <div class="field">
+              <input id="tempMax" type="text" placeholder="최대 값">
+            </div>
+          </div>
+          <div class="inline fields">
+            <label>습도 설정</label>
+            <div class="field">
+              <input id="humiMin" type="text" placeholder="최소 값">
+            </div>
+            <div class="field">
+              <input id="humiMax" type="text" placeholder="최대 값">
+            </div>
+          </div>
+
+        </div>
+        <div class="inline fields">
+          <div class="field">
+            <button id="deleteSensor" class="ui button red">센서 삭제</button>
+          </div>
+          <div class="field">
+            <button id="updateSensor" class="ui button blue">센서 설정 수정</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui medium header">센서 로그</div>
+    <div class="ui form">
+      <div class="three fields">
+        <div class="ui field calendar " id="minDatetime">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input id="minInput" type="text" placeholder="시작일">
+          </div>
+        </div>
+        <div class="ui field calendar " id="maxDatetime">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input id="maxInput" type="text" placeholder="종료일">
+          </div>
+        </div>
+        <div class="ui field " id="maxDatetime">
+          <div class="ui input left icon">
+            <i class="search icon"></i>
+            <input id="textSearch" type="text" placeholder="검색">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <button id="export" class="ui button green btn-primary"><i class="icon file excel"></i>엑셀 출력</button> -->
+    <button id="resetSearch" class="ui button blue">검색 초기화</button>
+    <table id="logTable" class="ui celled table">
+      <thead>
+        <th>회사</th>
+        <th>장소</th>
+        <th>센서명</th>
+        <th>측정시간</th>
+        <th>온도</th>
+        <th>습도</th>
+      </thead>
+    </table>
+    <button id="clearLog" class="ui button red">로그 초기화</button>
+  </div>
+  </div>
+  <div class="ui mini modal">
+    <div class="header"></div>
+    <div class="content">
+      <p>삭제하시겠습니까?</p>
+    </div>
+    <div class="actions">
+      <div class="ui cancel button">취소</div>
+      <div class="ui approve red button">삭제</div>
+    </div>
+  </div>
+</body>
+
+</html>

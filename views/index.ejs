@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Monitoring</title>
+</head>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.css">
+<script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.js"></script>
+<script src="/js/card.js"></script>
+<script>
+  $(document).ready(function () {
+    var option = []
+    function sensorLoad(callback)
+    {
+      $.ajax({
+        url: '/api/sensorList',
+        method: 'get',
+        async: false,
+        success: callback
+      })
+    }
+    sensorLoad(function(data){
+      var optionList = []
+      var list = data.data
+      for (var i = 0; i < list.length; i++) {
+        for (var j = 0; j < list[i].PLACE.length; j++) {
+          for (var k = 0; k < list[i].PLACE[j].SENSOR.length; k++) {
+            var optionObj = new Object();
+            optionObj['token'] = list[i].PLACE[j].SENSOR[k]['SENSOR_TOKEN']
+            optionObj['option'] = list[i].PLACE[j].SENSOR[k]['SENSOR_OPTION']
+            optionList.push(optionObj)
+          }
+        }
+      }
+      option = optionList
+      $('#cardWrapper').append(drawCard(data))
+    })
+    console.log(option)
+    $('.ui.form').form({
+      fields: {
+        companyName: {
+          identifier: 'companyName',
+          rules: [
+            {
+              type: 'empty',
+              prompt: '회사 카테고리를 입력해주세요.'
+            }
+          ]
+        },
+        placeName: {
+          identifier: 'placeName',
+          rules: [
+            {
+              type: 'empty',
+              prompt: '장소를 입력해주세요.'
+            }
+          ]
+        },
+        sensorName: {
+          identifier: 'sensorName',
+          rules: [
+            {
+              type: 'empty',
+              prompt: '센서명을 입력해주세요.'
+            }
+          ]
+        }
+      },
+      onSuccess: function (e) {
+        console.log('here?')
+        $('.ui.form').addClass('loading')
+        if ($('#tempMin').val() == '') {
+          $('#tempMin').val('-')
+        }
+        if ($('#tempMax').val() == '') {
+          $('#tempMax').val('-')
+        }
+        if ($('#humiMin').val() == '') {
+          $('#humiMin').val('-')
+        }
+        if ($('#humiMax').val() == '') {
+          $('#humiMax').val('-')
+        }
+        var sensorOption = $('#tempMin').val() + "/" + $('#tempMax').val() + "," + $('#humiMin').val() + "/" + $('#humiMax').val()
+        $.ajax({
+          url: '/api/sensorAdd',
+          method: 'post',
+          data: {
+            "companyName": $('#companyName').val(),
+            "placeName": $('#placeName').val(),
+            "sensorName": $('#sensorName').val(),
+            "sensorOption": sensorOption
+          },
+          success: function (data) {
+            console.log(data)
+            $('.ui.form').removeClass('loading')
+            $('.ui.modal').modal('hide')
+            $('body')
+              .toast({
+                title: '센서등록 성공'
+              })
+            setTimeout(function () {
+              location.reload()
+            }, 1500)
+          }
+        })
+      }
+    })
+    function submitForm() {
+      return 1
+    }
+    $('#sensorAdd').click(function () {
+      $('.ui.form').submit()
+    })
+    $('#openModal').click(function () {
+      $('.ui.modal').modal({
+        onHide: function () {
+          $('input').val('')
+        }
+      }).modal('show')
+
+    })
+    $("#columnSearch").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      $(".column").filter(function () {
+        $(this).toggle($(this).find('.header').text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+</script>
+<style>
+  .card {
+    margin: 0 auto !important;
+  }
+
+  .item:first-child::before {
+    width: 0px !important;
+  }
+
+  .segment {
+    border-bottom: 0 !important;
+  }
+
+  .tempContent {
+    background-color: #ccc !important;
+  }
+
+  .inline.fields label {
+    margin-left: 9px !important;
+  }
+
+  .inline.fields input {
+    width: 111px !important;
+  }
+
+  #allLog {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+
+  .allBtn {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+  }
+</style>
+
+<body>
+  <!--search bar-->
+  <div class="ui top attached menu">
+    <div class="right menu">
+      <div class="item">
+        <div class="ui icon">
+          <button id="openModal" class="ui button green"><i class="add link icon"></i>센서 등록</button>
+        </div>
+      </div>
+      <div class="ui right aligned category search item">
+        <div class="ui transparent icon input">
+          <input class="prompt" id="columnSearch" type="text" placeholder="센서 찾기">
+          <i class="search link icon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="cardWrapper" class="ui bottom attached segment">
+
+  </div>
+  <!-- all log-->
+  <div id="allLog">
+    <a href="/all">
+      <div class="ui bottom attached button blue allBtn">
+        <i class="eye icon"></i>
+        전체 로그 확인
+      </div>
+    </a>
+  </div>
+  <!-- modal -->
+  <div class="ui modal">
+    <i class="close icon"></i>
+    <div class="header">
+      센서 등록
+    </div>
+    <div class="content">
+      <div class="ui form">
+        <div class="three fields">
+          <div class="field">
+            <label>회사</label>
+            <input id="companyName" type="text" name="companyName" placeholder="회사">
+          </div>
+          <div class="field">
+            <label>장소</label>
+            <input id="placeName" type="text" name="placeName" placeholder="장소">
+          </div>
+          <div class="field">
+            <label>회의실</label>
+            <input id="sensorName" type="text" name="sensorName" placeholder="회의실">
+          </div>
+        </div>
+        <div class="fields">
+          <div class="inline fields">
+            <label>온도 설정</label>
+            <div class="field">
+              <input id="tempMin" type="text" placeholder="최소 값">
+            </div>
+            <div class="field">
+              <input id="tempMax" type="text" placeholder="최대 값">
+            </div>
+          </div>
+          <div class="inline fields">
+            <label>습도 설정</label>
+            <div class="field">
+              <input id="humiMin" type="text" placeholder="최소 값">
+            </div>
+            <div class="field">
+              <input id="humiMax" type="text" placeholder="최대 값">
+            </div>
+          </div>
+        </div>
+        <div class="ui error message"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui button">취소</div>
+      <div id="sensorAdd" class="ui button green">등록</div>
+    </div>
+  </div>
+</body>
+
+</html>
