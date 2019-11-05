@@ -16,7 +16,7 @@
 
     //layout
     var option = []
-    var socket = io('localhost:3000')
+    var socket = io('localhost')
     socket.on('getData', function (data) {
       $('.card').each(function () {
         var token = $(this).attr('data-source')
