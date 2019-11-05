@@ -13,4 +13,5 @@ router.get('/detail/:idx', function(req, res, next) {
 router.get('/all', function(req, res, next) {
   res.render('allList');
 });
+
 module.exports = router;

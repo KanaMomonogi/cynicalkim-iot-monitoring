@@ -9,11 +9,66 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.css">
 <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.7.8/dist/semantic.min.js"></script>
 <script src="/js/card.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
   $(document).ready(function () {
+    //socket
+
+    //layout
     var option = []
-    function sensorLoad(callback)
-    {
+    var socket = io('localhost:3000')
+    socket.on('getData', function (data) {
+      $('.card').each(function () {
+        var token = $(this).attr('data-source')
+        if (data.token == token) {
+          for (var i = 0; i < option.length; i++) {
+            if (data.token == option[i].token) {
+              var compareOption = option[i].option.split(',')
+              $(this).find('.tempSummary').html(compare(data.temp, compareOption[0]))
+              $(this).find('.humiSummary').html(compare(data.humi, compareOption[1]))
+            }
+          }
+          
+        }
+
+      })
+    })
+    function compare(value, option) {
+      var compareFlag = false;
+      var minMax = option.split('/')
+      if (minMax[0] != "-" && minMax[1] != "-") {
+            if (parseInt(value) <= parseInt(minMax[0])) {
+                compareFlag = true
+
+            }
+            else if (parseInt(value) >= parseInt(minMax[1])) {
+                compareFlag = true
+
+            }
+        }
+        else if (minMax[0] == "-" && minMax[1] != "-") {
+            if (parseInt(value) >= parseInt(minMax[1])) {
+                compareFlag = true
+
+            }
+        }
+        else if (minMax[0] != "-" && minMax[1] == "-") {
+            if (parseInt(value) <= parseInt(minMax[0])) {
+                compareFlag = true
+
+            }
+        }
+      var statement = "";
+      if (compareFlag) {
+        statement = '<span style="color:#f00">' + value + '</span>'
+      }
+      else {
+        statement = '<span>' + value + '</span>'
+      }
+
+      return statement
+    }
+    function sensorLoad(callback) {
       $.ajax({
         url: '/api/sensorList',
         method: 'get',
@@ -21,7 +76,7 @@
         success: callback
       })
     }
-    sensorLoad(function(data){
+    sensorLoad(function (data) {
       var optionList = []
       var list = data.data
       for (var i = 0; i < list.length; i++) {
@@ -165,25 +220,13 @@
     padding-top: 20px !important;
     padding-bottom: 20px !important;
   }
+  .ui.feed>.event>.content .summary{
+    font-size:2em;
+  }
 </style>
 
 <body>
-  <!--search bar-->
-  <div class="ui top attached menu">
-    <div class="right menu">
-      <div class="item">
-        <div class="ui icon">
-          <button id="openModal" class="ui button green"><i class="add link icon"></i>센서 등록</button>
-        </div>
-      </div>
-      <div class="ui right aligned category search item">
-        <div class="ui transparent icon input">
-          <input class="prompt" id="columnSearch" type="text" placeholder="센서 찾기">
-          <i class="search link icon"></i>
-        </div>
-      </div>
-    </div>
-  </div>
+  <% include ./header/mainHeader.ejs %>
   <div id="cardWrapper" class="ui bottom attached segment">
 
   </div>

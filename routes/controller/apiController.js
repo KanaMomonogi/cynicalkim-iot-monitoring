@@ -288,25 +288,20 @@ module.exports.sensorLogDelete = async (req, res) => {
 module.exports.logAdd = async (req, res) => {
     try {
 
+        let token = req.body.token
         let sensorIdx = await Sensor.findAll({
             attributes: ['SENSOR_IDX'],
             where: {
-                SENSOR_TOKEN: req.body.device
+                SENSOR_TOKEN: token
             }
         }).then(model => {
             console.log(model[0].SENSOR_IDX)
-            let logValue = req.body.data
-            logValue.forEach(element => {
-                let valueArr = element.value.split(',')
-                let temp = valueArr[0].split(':')[1]
-                let humi = valueArr[1].split(':')[1]
-                Log.create({
-                    SENSOR_IDX:model[0].SENSOR_IDX,
-                    TEMP:temp,
-                    HUMI:humi,
-                    REG_DE:new Date(Date.now()).toISOString()
-                })    
-            });
+            Log.create({
+                SENSOR_IDX:model[0].SENSOR_IDX,
+                TEMP:req.body.temp,
+                HUMI:req.body.humi,
+                REG_DE:new Date(Date.now()).toISOString()
+            }) 
             
         })
 
