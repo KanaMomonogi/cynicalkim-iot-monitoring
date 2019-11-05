@@ -16,7 +16,7 @@
 
     //layout
     var option = []
-    var socket = io('localhost')
+    var socket = io('https://cynicalkim-iot-monitoring.herokuapp.com/')
     socket.on('getData', function (data) {
       $('.card').each(function () {
         var token = $(this).attr('data-source')
