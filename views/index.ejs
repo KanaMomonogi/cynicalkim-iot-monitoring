@@ -92,7 +92,6 @@
       option = optionList
       $('#cardWrapper').append(drawCard(data))
     })
-    console.log(option)
     $('.ui.form').form({
       fields: {
         companyName: {
@@ -124,7 +123,6 @@
         }
       },
       onSuccess: function (e) {
-        console.log('here?')
         $('.ui.form').addClass('loading')
         if ($('#tempMin').val() == '') {
           $('#tempMin').val('-')
@@ -149,7 +147,6 @@
             "sensorOption": sensorOption
           },
           success: function (data) {
-            console.log(data)
             $('.ui.form').removeClass('loading')
             $('.ui.modal').modal('hide')
             $('body')

@@ -42,7 +42,7 @@
       info = data.info
       log = data.log
     })
-    console.log(info)
+
     $('#companyName').val(info.COMPANY_NAME)
     $('#placeName').val(info.PLACE_NAME)
     $('#sensorName').val(info.SENSOR_NAME)
@@ -217,7 +217,6 @@
       }
     )
     $('#deleteSensor').click(function () {
-      console.log('click')
       $('.modal .content p').text('센서를 삭제합니다. 데이터는 복구되지 않습니다.')
 
       $('.tiny.modal').modal({
@@ -227,7 +226,6 @@
             method: 'get',
             async: false,
             success: function (json) {
-              console.log(json)
               if (json.result == 'success') {
                 $('body')
                   .toast({
@@ -247,7 +245,6 @@
       $('.approve').text('수정')
       $('.approve').removeClass('red')
       $('.approve').addClass('blue')
-      console.log('click')
       $('.tiny.modal').modal({
         onApprove: function () {
           let tempMin = $('#tempMin').val()
@@ -279,7 +276,6 @@
             },
             async: false,
             success: function (json) {
-              console.log(json)
               if (json.result == 'success') {
                 $('body')
                   .toast({
@@ -307,7 +303,6 @@
             method: 'get',
             async: false,
             success: function (json) {
-              console.log(json)
               if (json.result == 'success') {
                 $('body')
                   .toast({

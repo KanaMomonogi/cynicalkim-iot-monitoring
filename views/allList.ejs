@@ -41,7 +41,6 @@
       info = data.info
       log = data.log
     })
-    console.log(info)
     var columList =
       [
         {
@@ -211,7 +210,6 @@
             method: 'get',
             async: false,
             success: function (json) {
-              console.log(json)
               if (json.result == 'success') {
                 $('body')
                   .toast({
@@ -235,7 +233,6 @@
             method: 'get',
             async: false,
             success: function (json) {
-              console.log(json)
               if (json.result == 'success') {
                 $('body')
                   .toast({
