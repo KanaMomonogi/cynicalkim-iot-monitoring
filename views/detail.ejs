@@ -125,6 +125,7 @@
       },
       data: log,
       columns: columList,
+      order: [[ 3, "desc" ]],
       columnDefs: [{
         targets: 3, render: function (data) {
           return moment(data).format('YYYY-MM-DD HH:mm');
